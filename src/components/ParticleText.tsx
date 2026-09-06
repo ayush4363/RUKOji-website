@@ -82,8 +82,8 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
     const initParticles = () => {
       const dpr = window.devicePixelRatio || 1;
       const rect = canvas.getBoundingClientRect();
-      const width = rect.width;
-      const height = rect.height;
+      const width = Math.floor(rect.width || canvas.parentElement?.clientWidth || window.innerWidth || 360);
+      const height = Math.floor(rect.height || canvas.parentElement?.clientHeight || 140);
 
       if (width === 0 || height === 0) return;
 
@@ -200,6 +200,7 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
         initParticles();
       });
     }
+    window.addEventListener('load', initParticles);
 
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
@@ -246,6 +247,10 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
       lastTime = time;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (particles.length === 0) {
+        initParticles();
+      }
 
       const pushStrength = 130;
       const ease = 14;
