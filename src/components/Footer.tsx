@@ -16,7 +16,7 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-[#0B0B0C] border-t border-[#27272A]/30 py-16 text-xs text-[#988686]">
+    <footer className="bg-[#0B0B0C] border-t border-[#27272A]/30 pt-16 pb-6 text-xs text-[#988686]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -44,7 +44,7 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="hidden md:block space-y-3">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider">Navigation</h4>
             <ul className="space-y-2">
               <li><button onClick={() => scrollToSection('showcase')} className="hover:text-[#7C3AED] transition-colors text-left focus:outline-none">Showcase</button></li>
