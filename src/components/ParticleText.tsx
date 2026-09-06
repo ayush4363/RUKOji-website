@@ -101,15 +101,20 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
 
       let fontSize = Math.min(width * 0.10, 92);
       if (width < 640) {
-        fontSize = Math.min(width * 0.12, 54);
+        fontSize = Math.min(width * 0.11, 46);
       }
 
-      const fontStyle = `800 ${fontSize}px "Plus Jakarta Sans", system-ui, -apple-system, sans-serif`;
-      offCtx.font = fontStyle;
+      const fontStyle = (sz: number) => `800 ${sz}px Inter, "Plus Jakarta Sans", system-ui, -apple-system, sans-serif`;
+      offCtx.font = fontStyle(fontSize);
       offCtx.textAlign = 'center';
       offCtx.textBaseline = 'middle';
 
-      const lineGap = fontSize * 1.02;
+      while (offCtx.measureText('Pause before').width > width * 0.90 && fontSize > 18) {
+        fontSize -= 1;
+        offCtx.font = fontStyle(fontSize);
+      }
+
+      const lineGap = fontSize * 1.05;
       const line1 = 'Pause before';
       const line2 = 'you scroll.';
 
@@ -149,7 +154,7 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
           const index = (y * width + x) * 4;
           const alpha = data[index + 3];
 
-          if (alpha > 128) {
+          if (alpha > 40) {
             const r = data[index];
             const g = data[index + 1];
             const b = data[index + 2];
@@ -226,6 +231,7 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
 
     window.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseleave', handleMouseLeave);
+    canvas.addEventListener('touchstart', handleTouchMove, { passive: true });
     canvas.addEventListener('touchmove', handleTouchMove, { passive: true });
     canvas.addEventListener('touchend', handleTouchEnd);
 
@@ -241,6 +247,10 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
       lastTime = time;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (particles.length === 0) {
+        initParticles();
+      }
 
       const pushStrength = 130;
       const ease = 14;
