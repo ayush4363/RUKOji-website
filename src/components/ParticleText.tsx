@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface Particle {
   x: number;
@@ -34,7 +34,6 @@ interface ParticleTextProps {
 
 export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [isCanvasReady, setIsCanvasReady] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -102,20 +101,15 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
 
       let fontSize = Math.min(width * 0.10, 92);
       if (width < 640) {
-        fontSize = Math.min(width * 0.11, 44);
+        fontSize = Math.min(width * 0.12, 54);
       }
 
-      const fontStyle = (sz: number) => `800 ${sz}px sans-serif, system-ui, -apple-system, Arial`;
-      offCtx.font = fontStyle(fontSize);
+      const fontStyle = `800 ${fontSize}px "Plus Jakarta Sans", system-ui, -apple-system, sans-serif`;
+      offCtx.font = fontStyle;
       offCtx.textAlign = 'center';
       offCtx.textBaseline = 'middle';
 
-      while (offCtx.measureText('Pause before').width > width * 0.88 && fontSize > 16) {
-        fontSize -= 1;
-        offCtx.font = fontStyle(fontSize);
-      }
-
-      const lineGap = fontSize * 1.05;
+      const lineGap = fontSize * 1.02;
       const line1 = 'Pause before';
       const line2 = 'you scroll.';
 
@@ -155,7 +149,7 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
           const index = (y * width + x) * 4;
           const alpha = data[index + 3];
 
-          if (alpha > 30) {
+          if (alpha > 128) {
             const r = data[index];
             const g = data[index + 1];
             const b = data[index + 2];
@@ -193,18 +187,9 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
           }
         }
       }
-
-      if (particles.length > 0) {
-        setIsCanvasReady(true);
-      }
     };
 
     initParticles();
-    if (document.fonts) {
-      document.fonts.ready.then(() => {
-        initParticles();
-      });
-    }
 
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
@@ -236,7 +221,6 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
 
     window.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseleave', handleMouseLeave);
-    canvas.addEventListener('touchstart', handleTouchMove, { passive: true });
     canvas.addEventListener('touchmove', handleTouchMove, { passive: true });
     canvas.addEventListener('touchend', handleTouchEnd);
 
@@ -252,10 +236,6 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
       lastTime = time;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      if (particles.length === 0) {
-        initParticles();
-      }
 
       const pushStrength = 130;
       const ease = 14;
@@ -361,20 +341,9 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
 
   return (
     <div className={`relative w-full h-[140px] sm:h-[185px] md:h-[210px] flex items-center justify-center ${className}`}>
-      <div className={`absolute inset-0 flex flex-col items-center justify-center text-center transition-opacity duration-500 pointer-events-none select-none ${
-        isCanvasReady ? 'opacity-0' : 'opacity-100'
-      }`}>
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight leading-tight font-chennai">
-          Pause before
-        </h1>
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight font-chennai bg-gradient-to-r from-white via-[#C084FC] to-[#7C3AED] bg-clip-text text-transparent">
-          you scroll.
-        </h1>
-      </div>
-
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-pointer touch-none block relative z-10"
+        className="w-full h-full cursor-pointer touch-none block"
       />
     </div>
   );
