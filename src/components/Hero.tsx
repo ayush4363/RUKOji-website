@@ -2,6 +2,7 @@ import React from 'react';
 import { Download, ArrowRight, Laptop, Smartphone, ShieldCheck } from 'lucide-react';
 import { productConfig } from '../config/product.config';
 import { RealRukojiAppWindow } from './RealRukojiAppWindow';
+import { ParticleText } from './ParticleText';
 import { HoverText } from './HoverText';
 import { ShapeGrid } from './ShapeGrid';
 
@@ -14,7 +15,7 @@ export const Hero: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-2 sm:mb-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-[#121214] border border-[#27272A]/40 text-[#D1D0D0] shadow-lg">
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1E8D42] opacity-75"></span>
@@ -26,15 +27,11 @@ export const Hero: React.FC = () => {
           </div>
         </div>
 
-        <div className="text-center max-w-4xl mx-auto space-y-6">
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#D1D0D0] leading-[1.1] font-chennai">
-            <HoverText text="Pause before" /> <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-[#D1D0D0] to-[#7C3AED]">
-              you scroll.
-            </span>
-          </h1>
+        <div className="text-center max-w-4xl mx-auto space-y-2 sm:space-y-3">
+          <h1 className="sr-only">Pause before you scroll.</h1>
+          <ParticleText />
 
-          <div className="flex justify-center pt-1">
+          <div className="flex justify-center pt-0">
             <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full text-xs font-semibold bg-[#121214] border border-[#7C3AED]/40 text-[#D1D0D0] shadow-md">
               <ShieldCheck className="w-4 h-4 text-[#7C3AED]" />
               <span className="text-white">Adult Website Blocking</span>

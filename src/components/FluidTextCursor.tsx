@@ -67,13 +67,13 @@ export const FluidTextCursor: React.FC = () => {
             y: y + (Math.random() - 0.5) * 4,
             vx: Math.cos(angle) * speed + dx * 0.08,
             vy: Math.sin(angle) * speed + dy * 0.08,
-            size: 5 + Math.random() * 3,
-            maxSize: 16 + Math.random() * 6,
-            alpha: 0.85,
-            decay: 0.025 + Math.random() * 0.015,
+            size: 5 + Math.random() * 3.5,
+            maxSize: 17 + Math.random() * 5,
+            alpha: 0.90,
+            decay: 0.020 + Math.random() * 0.01,
             angle: Math.random() * Math.PI * 2,
             spin: (Math.random() - 0.5) * 0.1,
-            color: Math.random() > 0.4 ? '124, 58, 237' : '109, 40, 217',
+            color: Math.random() > 0.5 ? '147, 51, 234' : '124, 58, 237',
           });
         }
       }
@@ -114,8 +114,8 @@ export const FluidTextCursor: React.FC = () => {
 
         const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, p.size);
         grad.addColorStop(0, `rgba(${p.color}, ${p.alpha})`);
-        grad.addColorStop(0.5, `rgba(139, 92, 246, ${p.alpha * 0.6})`);
-        grad.addColorStop(1, `rgba(109, 40, 217, 0)`);
+        grad.addColorStop(0.45, `rgba(147, 51, 234, ${p.alpha * 0.7})`);
+        grad.addColorStop(1, `rgba(124, 58, 237, 0)`);
 
         ctx.fillStyle = grad;
         ctx.beginPath();
@@ -129,14 +129,15 @@ export const FluidTextCursor: React.FC = () => {
         ctx.save();
         ctx.translate(mouseX, mouseY);
 
-        const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 12);
-        coreGrad.addColorStop(0, 'rgba(139, 92, 246, 0.9)');
-        coreGrad.addColorStop(0.5, 'rgba(124, 58, 237, 0.6)');
+        const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 18);
+        coreGrad.addColorStop(0, 'rgba(216, 180, 254, 0.98)');
+        coreGrad.addColorStop(0.35, 'rgba(168, 85, 247, 0.80)');
+        coreGrad.addColorStop(0.7, 'rgba(124, 58, 237, 0.45)');
         coreGrad.addColorStop(1, 'rgba(109, 40, 217, 0)');
 
         ctx.fillStyle = coreGrad;
         ctx.beginPath();
-        ctx.arc(0, 0, 12, 0, Math.PI * 2);
+        ctx.arc(0, 0, 18, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       }
