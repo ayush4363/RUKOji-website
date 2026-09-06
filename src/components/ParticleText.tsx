@@ -8,9 +8,24 @@ interface Particle {
   vx: number;
   vy: number;
   radius: number;
+  baseR: number;
+  baseG: number;
+  baseB: number;
+  hoverR: number;
+  hoverG: number;
+  hoverB: number;
+  scaleProgress: number;
+  colorProgress: number;
   color: string;
-  baseColor: string;
-  hoverColor: string;
+  charId?: string;
+}
+
+interface CharBox {
+  id: string;
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
 }
 
 interface ParticleTextProps {
@@ -32,8 +47,36 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
     const mouse = {
       x: -9999,
       y: -9999,
-      radius: 45,
       active: false,
+    };
+
+    const buildCharBoxes = (
+      offCtx: CanvasRenderingContext2D,
+      text: string,
+      lineY: number,
+      fontSize: number,
+      canvasWidth: number,
+      prefix: string
+    ): CharBox[] => {
+      const boxes: CharBox[] = [];
+      let currentX = (canvasWidth - offCtx.measureText(text).width) / 2;
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const chWidth = offCtx.measureText(ch).width;
+
+        if (ch.trim().length > 0) {
+          boxes.push({
+            id: `${prefix}_${i}`,
+            minX: currentX - 3,
+            maxX: currentX + chWidth + 3,
+            minY: lineY - fontSize * 0.6,
+            maxY: lineY + fontSize * 0.6,
+          });
+        }
+        currentX += chWidth;
+      }
+      return boxes;
     };
 
     const initParticles = () => {
@@ -43,8 +86,6 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
       const height = rect.height;
 
       if (width === 0 || height === 0) return;
-
-      mouse.radius = width < 640 ? 40 : 55;
 
       canvas.width = width * dpr;
       canvas.height = height * dpr;
@@ -93,6 +134,10 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
       offCtx.fillStyle = grad2;
       offCtx.fillText(line2, width / 2, line2Y);
 
+      const boxesL1 = buildCharBoxes(offCtx, line1, line1Y, fontSize, width, 'L1');
+      const boxesL2 = buildCharBoxes(offCtx, line2, line2Y, fontSize, width, 'L2');
+      const allCharBoxes = [...boxesL1, ...boxesL2];
+
       const imageData = offCtx.getImageData(0, 0, width, height);
       const data = imageData.data;
 
@@ -109,8 +154,16 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
             const g = data[index + 1];
             const b = data[index + 2];
 
-            const baseColor = `rgb(${r}, ${g}, ${b})`;
-            const hoverColor = '#8B5CF6';
+            const baseColorStr = `rgb(${r}, ${g}, ${b})`;
+
+            let assignedCharId = '';
+            for (let c = 0; c < allCharBoxes.length; c++) {
+              const box = allCharBoxes[c];
+              if (x >= box.minX && x <= box.maxX && y >= box.minY && y <= box.maxY) {
+                assignedCharId = box.id;
+                break;
+              }
+            }
 
             particles.push({
               x: x + (Math.random() - 0.5) * 2,
@@ -120,9 +173,16 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
               vx: 0,
               vy: 0,
               radius: width < 640 ? 1.4 : 1.75,
-              color: baseColor,
-              baseColor: baseColor,
-              hoverColor: hoverColor,
+              baseR: r,
+              baseG: g,
+              baseB: b,
+              hoverR: 147,
+              hoverG: 51,
+              hoverB: 234,
+              scaleProgress: 0,
+              colorProgress: 0,
+              color: baseColorStr,
+              charId: assignedCharId,
             });
           }
         }
@@ -130,6 +190,11 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
     };
 
     initParticles();
+    if (document.fonts) {
+      document.fonts.ready.then(() => {
+        initParticles();
+      });
+    }
 
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
@@ -177,30 +242,68 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const pushStrength = 380;
+      const pushStrength = 130;
       const ease = 14;
       const friction = 0.82;
+
+      const canvasWidth = canvas.getBoundingClientRect().width;
+      const isMobile = canvasWidth < 640;
+
+      const headLen = isMobile ? 18 : 25;
+      const maxHalfWidth = isMobile ? 16 : 24;
+      const tailLen = isMobile ? 65 : 100;
+
+      const charActivation: Record<string, number> = {};
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        const dx = mouse.x - p.x;
+        const dy = mouse.y - p.y;
+
+        const u = -dx;
+        const v = dy;
+
+        let normDist = 2.0;
+
+        if (u >= 0 && u <= headLen) {
+          normDist = (u / headLen) ** 2 + (v / maxHalfWidth) ** 2;
+        } else if (u < 0 && u >= -tailLen) {
+          const t = -u / tailLen;
+          const taperedWidth = maxHalfWidth * Math.pow(1.0 - t, 0.75);
+          const currentWidth = Math.max(2.0, taperedWidth);
+          normDist = t ** 2 + (v / currentWidth) ** 2;
+        }
+
+        if (normDist <= 1.0 && mouse.active && mouse.x > 0) {
+          const force = 1.0 - Math.sqrt(normDist);
+          if (p.charId) {
+            charActivation[p.charId] = Math.max(
+              charActivation[p.charId] || 0,
+              Math.min(1.0, force * 1.6)
+            );
+          }
+        }
+      }
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
-        const dx = mouse.x - p.x;
-        const dy = mouse.y - p.y;
-        const distSq = dx * dx + dy * dy;
-        const radiusSq = mouse.radius * mouse.radius;
+        let targetScale = 0;
+        let targetColor = 0;
 
-        if (distSq < radiusSq && distSq > 0) {
-          const dist = Math.sqrt(distSq);
-          const force = (mouse.radius - dist) / mouse.radius;
+        if (p.charId && charActivation[p.charId] > 0 && mouse.active && mouse.x > 0) {
+          targetColor = charActivation[p.charId];
+          targetScale = charActivation[p.charId];
+
+          const dx = mouse.x - p.x;
+          const dy = mouse.y - p.y;
           const angle = Math.atan2(dy, dx);
-
-          p.vx -= Math.cos(angle) * force * pushStrength * delta;
-          p.vy -= Math.sin(angle) * force * pushStrength * delta;
-
-          p.color = p.hoverColor;
-        } else {
-          p.color = p.baseColor;
+          p.vx -= Math.cos(angle) * targetColor * pushStrength * delta;
+          p.vy -= Math.sin(angle) * targetColor * pushStrength * delta;
         }
+
+        p.scaleProgress += (targetScale - p.scaleProgress) * 0.18;
+        p.colorProgress += (targetColor - p.colorProgress) * 0.14;
 
         p.vx += (p.originX - p.x) * ease * delta;
         p.vy += (p.originY - p.y) * ease * delta;
@@ -211,9 +314,18 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
         p.x += p.vx;
         p.y += p.vy;
 
+        const curR = Math.round(p.baseR + (p.hoverR - p.baseR) * p.colorProgress);
+        const curG = Math.round(p.baseG + (p.hoverG - p.baseG) * p.colorProgress);
+        const curB = Math.round(p.baseB + (p.hoverB - p.baseB) * p.colorProgress);
+
+        p.color = `rgb(${curR}, ${curG}, ${curB})`;
+
+        const idleWave = Math.sin(time * 0.003 + p.originX * 0.08) * 0.035;
+        const renderRadius = p.radius * (1.0 + idleWave + p.scaleProgress * 0.25);
+
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, renderRadius, 0, Math.PI * 2);
         ctx.fill();
       }
 

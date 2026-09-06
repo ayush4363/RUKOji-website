@@ -60,19 +60,19 @@ export const FluidTextCursor: React.FC = () => {
 
         const count = Math.min(Math.ceil(moveDist / 2) + 1, 4);
         for (let i = 0; i < count; i++) {
-          const angle = Math.random() * Math.PI * 2;
-          const speed = 0.3 + Math.random() * 1.0;
+          const spreadX = -Math.random() * 18;
+          const spreadY = (Math.random() - 0.5) * 6;
           particles.push({
-            x: x + (Math.random() - 0.5) * 4,
-            y: y + (Math.random() - 0.5) * 4,
-            vx: Math.cos(angle) * speed + dx * 0.08,
-            vy: Math.sin(angle) * speed + dy * 0.08,
+            x: x + spreadX,
+            y: y + spreadY,
+            vx: -0.8 + dx * 0.05,
+            vy: spreadY * 0.04 + dy * 0.05,
             size: 5 + Math.random() * 3.5,
-            maxSize: 17 + Math.random() * 5,
+            maxSize: 16 + Math.random() * 5,
             alpha: 0.90,
             decay: 0.020 + Math.random() * 0.01,
             angle: Math.random() * Math.PI * 2,
-            spin: (Math.random() - 0.5) * 0.1,
+            spin: (Math.random() - 0.5) * 0.08,
             color: Math.random() > 0.5 ? '147, 51, 234' : '124, 58, 237',
           });
         }
