@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface Particle {
   x: number;
@@ -34,6 +34,7 @@ interface ParticleTextProps {
 
 export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isCanvasReady, setIsCanvasReady] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -101,15 +102,15 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
 
       let fontSize = Math.min(width * 0.10, 92);
       if (width < 640) {
-        fontSize = Math.min(width * 0.11, 46);
+        fontSize = Math.min(width * 0.11, 44);
       }
 
-      const fontStyle = (sz: number) => `800 ${sz}px Inter, "Plus Jakarta Sans", system-ui, -apple-system, sans-serif`;
+      const fontStyle = (sz: number) => `800 ${sz}px sans-serif, system-ui, -apple-system, Arial`;
       offCtx.font = fontStyle(fontSize);
       offCtx.textAlign = 'center';
       offCtx.textBaseline = 'middle';
 
-      while (offCtx.measureText('Pause before').width > width * 0.90 && fontSize > 18) {
+      while (offCtx.measureText('Pause before').width > width * 0.88 && fontSize > 16) {
         fontSize -= 1;
         offCtx.font = fontStyle(fontSize);
       }
@@ -154,7 +155,7 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
           const index = (y * width + x) * 4;
           const alpha = data[index + 3];
 
-          if (alpha > 40) {
+          if (alpha > 30) {
             const r = data[index];
             const g = data[index + 1];
             const b = data[index + 2];
@@ -191,6 +192,10 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
             });
           }
         }
+      }
+
+      if (particles.length > 0) {
+        setIsCanvasReady(true);
       }
     };
 
@@ -356,9 +361,20 @@ export const ParticleText: React.FC<ParticleTextProps> = ({ className = '' }) =>
 
   return (
     <div className={`relative w-full h-[140px] sm:h-[185px] md:h-[210px] flex items-center justify-center ${className}`}>
+      <div className={`absolute inset-0 flex flex-col items-center justify-center text-center transition-opacity duration-500 pointer-events-none select-none ${
+        isCanvasReady ? 'opacity-0' : 'opacity-100'
+      }`}>
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tight leading-tight font-chennai">
+          Pause before
+        </h1>
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight font-chennai bg-gradient-to-r from-white via-[#C084FC] to-[#7C3AED] bg-clip-text text-transparent">
+          you scroll.
+        </h1>
+      </div>
+
       <canvas
         ref={canvasRef}
-        className="w-full h-full cursor-pointer touch-none block"
+        className="w-full h-full cursor-pointer touch-none block relative z-10"
       />
     </div>
   );
